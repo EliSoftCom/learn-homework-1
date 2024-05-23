@@ -17,41 +17,65 @@ import ephem
 import logging
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
+planets_and_moons = ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto']
+
 logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO,
                     filename='bot.log')
 
 
-def greet_user(update, context):
+def greet_user(update, context) -> None:
     text = 'Вызван /start'
     print(text)
     update.message.reply_text(text)
 
 
-def loc_of_pl(update, context):
+def loc_of_pl(update, context) -> None:
     user_text = update.message.text
-    planet_name = user_text.split()[1]
+    try:
+        planet_name = user_text.split()[1]
+    except IndexError:
+        update.message.reply_text("Не указано название планеты")
+        return
     date_today = str(date.today())
-    print(date_today)
     date_today = date_today.replace('-', '/')
-    update.message.reply_text(date_today)
-    print(date_today)
+    planet_name = planet_name.lower().capitalize()
+    temp = ""
+    if planet_name in planets_and_moons:
+        if planet_name == 'Mercury':
+            temp = ephem.Mercury(date_today)
+        elif planet_name == 'Venus':
+            temp = ephem.Venus(date_today)
+        elif planet_name == 'Mars':
+            temp = ephem.Mars(date_today)
+        elif planet_name == 'Jupiter':
+            temp = ephem.Jupiter(date_today)
+        elif planet_name == 'Saturn':
+            temp = ephem.Saturn(date_today)
+        elif planet_name == 'Uranus':
+            temp = ephem.Uranus(date_today)
+        elif planet_name == 'Neptune':
+            temp = ephem.Neptune(date_today)
+        elif planet_name == 'Pluto':
+            temp = ephem.Pluto(date_today)
+        update.message.reply_text(ephem.constellation(temp))
+    else:
+        print("Введено неверное название")
+        return
 
-
-def talk_to_me(update, context):
+def talk_to_me(update, context) -> None:
     user_text = update.message.text
     print(user_text)
     update.message.reply_text(user_text)
 
 
-def main():
+def main() -> None:
     mybot = Updater("6576223151:AAEolKJ9e9efO1vPSZdFiOw3vTPUOKrZ9rQ", use_context=True)
 
     dp = mybot.dispatcher
     dp.add_handler(CommandHandler("start", greet_user))
     dp.add_handler(CommandHandler("planet", loc_of_pl))
     dp.add_handler(MessageHandler(Filters.text, talk_to_me))
-
     mybot.start_polling()
     mybot.idle()
 
